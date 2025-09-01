@@ -28,13 +28,13 @@ export default function LandingPage() {
                     
                     <p>Cover a distance by FaceJoin</p>
                     <div role='button'>
-                      <Link to={"/home"}>Get Started </Link>
+                      <Link to={"/auth"}>Get Started </Link>
                     </div>
                 </div>
                 {/* image section */}
 
                 <div>
-                    <img src="/mobile.png" alt="vedio call image" />
+                    <img src="/mobile.png" alt="vedio call image" /> 
                 </div>
             </div>
         </div>

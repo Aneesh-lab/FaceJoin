@@ -1,5 +1,7 @@
 import LandingPage from "./pages/landing.jsx";
+import Authentication from "./pages/authentication.jsx";
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { AuthProvider } from "./contexts/AuthContext.jsx";
 
 
 
@@ -9,17 +11,18 @@ function App() {
     <>
       <Router>
 
+<AuthProvider>
 
-
-        <Routes>
+          <Routes>
           
 
           {/* <Route path ='/home' element/> */}
 
-          <Route path='/' element={<LandingPage/>} /> 
-
+          <Route path='/' element={<LandingPage />} /> 
+          
+          <Route path='/auth' element={<Authentication />} />
      </Routes>
-
+</AuthProvider>
       </Router>
     </>
   )

@@ -1,12 +1,15 @@
 import axios from "axios";
+import httpStatus from "http-status";
 import {Children, createContext, useContext, useState} from "react"
 import { useNavigate } from "react-router-dom";
+
+
 
 
 export const AuthContext = createContext({});
 
 const client = axios.create({
-    baseURL: "localhost:8000/api/v1/users"
+    baseURL: "http://localhost:8000/api/v1/users"
 })
 
 export const AuthProvider = ({ children }) => {
@@ -14,6 +17,8 @@ export const AuthProvider = ({ children }) => {
     const authContext = useContext(AuthContext)
 
     const [userData, setUserData] = useState(authContext);
+
+    
 
     const handleRegister = async (name, username, password) => {
         try {
@@ -24,7 +29,7 @@ export const AuthProvider = ({ children }) => {
             })
 
             if (request.status === httpStatus.CREATED) {
-                return request.data.messages;
+                return request.data.message || "User registered Successfully"
             }
         } catch(err) {
             throw err;
@@ -43,14 +48,14 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem("token", request.data.token);
             }
         } catch (err) {
-            
+            throw err;
         }
     }
 
     const router = useNavigate();
 
     const data = {
-        userData,setUserData,handleRegister
+        userData,setUserData,handleRegister,handleLogin
     }
 
     return (
@@ -59,3 +64,4 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     )
 }
+

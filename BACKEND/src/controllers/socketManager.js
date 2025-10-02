@@ -16,6 +16,7 @@ export const connectToSocket = (server) => {
 
 
     io.on("connection", (socket) => {
+        
     
         socket.on("join-call", (path) => {
     
@@ -27,8 +28,8 @@ export const connectToSocket = (server) => {
             
        
 
-            for (let a = 0; a < connections[path].length; i++) {
-                io.to(connection[path][a]).emit("user-joined", socket.id)
+            for (let a = 0; a < connections[path].length; a++) {
+                io.to(connections[path][a]).emit("user-joined", socket.id,  connections[path]  )
             }
 
             if (messages[path] !== undefined) {
@@ -52,7 +53,7 @@ export const connectToSocket = (server) => {
                         return [roomKey, true];
                     }
 
-                    return [room, isFound];
+                    return [roomKey, isFound];
                 }, ['', false]);
             
             if (found == true) {

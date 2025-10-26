@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "../styles/VideoMeet.module.css"
-import {Badge, IconButton,TextField } from '@mui/material'
+import { Badge, IconButton, ListItem, TextField } from '@mui/material'
+
+import { useNavigate } from "react-router-dom";
+
 
 import Button from '@mui/material/Button';
 import VideocamIcon from '@mui/icons-material/Videocam';
@@ -64,6 +67,7 @@ export default function VideoMeetComponent() {
     // if (isChrome() === false) {
 
     // }
+    const messageEndRef = useRef(null);
 
     const getPermissions = async () => {
         try {
@@ -112,6 +116,12 @@ export default function VideoMeetComponent() {
     useEffect(() => {
         getPermissions();
     }, []);
+
+     useEffect(() => {
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+ },[messages]);
 
 
     let getUserMediaSuccess = (stream) => {
@@ -212,32 +222,44 @@ export default function VideoMeetComponent() {
     }, [audio, video])
 
     //TODO
+    
     let gotMessageFromServer = (fromId, message) => {
         var signal = JSON.parse(message)
 
         if (fromId !== socketIdRef.current) {
             if (signal.sdp) {
                 connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp)).then(() => {
-                    if (signal.sdp.type == "offer") {
+                    if (signal.sdp.type === 'offer') {
                         connections[fromId].createAnswer().then((description) => {
                             connections[fromId].setLocalDescription(description).then(() => {
-                                socketRef.current.emit("signal", fromId, JSON.stringify({ "sdp": connections[fromId].localDescription }))
+                                socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }))
                             }).catch(e => console.log(e))
                         }).catch(e => console.log(e))
                     }
                 }).catch(e => console.log(e))
             }
+
             if (signal.ice) {
                 connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch(e => console.log(e))
             }
-
         }
     }
 
-    // TODO addMessage 
-    let addMessage = () => {
 
-    }
+
+
+    // TODO addMessage 
+    let addMessage = (data, sender, socketIdSender) => {
+
+        setMessages((prevMessages) => [
+            ...prevMessages, 
+           { sender: sender, data: data, time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) }
+    ]);
+    
+        if (socketIdSender !== socketIdRef.current) {
+            setNewMessages((prevMessages) => prevMessages + 1)
+            
+    }}
 
     let connectToSocketServer = () => {
         socketRef.current = io.connect(server_url, { secure: false })
@@ -346,6 +368,8 @@ export default function VideoMeetComponent() {
         connectToSocketServer();
     }
 
+    let routeTo = useNavigate();
+
     let connect = () => {
         setAskForUsername(false);
         getMedia();
@@ -359,11 +383,97 @@ export default function VideoMeetComponent() {
         setAudio(!audio);
     }
 
+    let getDisplayMediaSuccess = (stream) => {
+        try {
+            window.localStream.getTracks().forEach(track => track.stop())
+        } catch (e) { console.log(e) }
+
+        window.localStream = stream;
+        localVideoRef.current.srcObject = stream;
+
+        for (let id in connections) {
+            if (id == socketIdRef.current) continue;
+
+            connections[id].addStream(window.localStream)
+            connections[id].createOffer().then((description) => [
+                connections[id].setLocalDescription(description).then(() => {
+                    socketRef.current.emit("signal",id,JSON.stringify({"sdp": connections[id].localDescription}))
+                })
+                    .catch (e => console.log(e))
+            ])
+
+        }
+        
+        stream.getTracks().forEach(track => track.onended = () => {
+            setScreen(false)
+      
+
+
+            try {
+                let tracks = localVideoRef.current.srcObject.getTracks()
+                tracks.forEach(track => track.stop())
+            } catch (e) { console.log(e) }
+
+            //TODO BlackSilence
+
+            let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
+            window.localStream = blackSilence();
+            localVideoRef.current.srcObject = window.localStream;
+
+
+           getUserMedia()
+        })
+        
+    }
+
+
+
+
+
+    let getDisplayMedia = () => {
+        if (screen) {
+            if (navigator.mediaDevices.getDisplayMedia) {
+             navigator.mediaDevices.getDisplayMedia({video: true , audio:true})
+             .then(getDisplayMediaSuccess)
+             .then((stream)=>{})
+             .catch((e)=>console.log(e))
+         }
+     }
+ }
+
+    useEffect(() => {
+        if (screen !== undefined) {
+            getDisplayMedia();
+        }
+    }, [screen])
+    
+   
+
+    let handleScreen = () => {
+        setScreen(!screen)
+    }
+
+    let sendMessage = () => {
+        socketRef.current.emit("chat-message", message, username);
+        setMessage("");
+    }
+    
+
+    let handleEndCall = () => {
+        try {
+            let tracks = localVideoRef.current.srcObject.getTracks();
+            tracks.forEach(track => track.stop())
+        } catch (e) { }
+
+        routeTo("/home")
+        
+    }
+
     return (
         <div>
             {askForUsername ? (
                 <div>
-                    <h2>Enter into Lobby</h2>
+                    <h2 style={{marginBottom:"10px"}}>Enter into Lobby</h2>
                     <TextField
                         id="outlined-basic"
                         label="Username"
@@ -371,7 +481,10 @@ export default function VideoMeetComponent() {
                         onChange={e => setUsername(e.target.value)}
                         variant="outlined"
                     />
-                    <Button variant="contained" onClick={connect}>Connect</Button>
+                    <Button
+                        variant="contained"
+                        onClick={connect}
+                        style={{marginLeft:"5px",marginTop:"6px",padding:"12px"}}                    >Connect</Button>
                     <div>
                         <video ref={localVideoRef} autoPlay muted></video>
                     </div>
@@ -380,6 +493,49 @@ export default function VideoMeetComponent() {
             ) :
 
                 <div className={styles.meetVideoContainer}>
+
+{showModal ?  <div className={styles.chatRoom}>
+                      
+                        
+                        <div className={styles.chatContainer}>
+                            <h1 style={{margin:"10px"}}>Chat</h1>
+
+                            <div className={styles.chatMessages}>
+                                
+                                {messages.length > 0 ?messages.map((item, index) => {
+    
+                                    return (
+                                        <div style={{marginBottom:"10px"}}
+                                            key={index}>
+                                            <p
+                                            style={{fontWeight: "bold", color: "orange"}}
+                                            >{item.sender}</p>
+                                            <div className={styles.chatData}>
+                                                <p className={styles.messageData}>{item.data}</p>
+                                                <p className={styles.messageTime}>{item.time}</p></div>   
+
+
+                                        </div>
+                                    )
+                                    
+                                }) : <p>No Messages Yet</p>}
+                                 <div ref={messageEndRef} />
+
+                            </div>
+                            
+                            <div className={styles.chattingArea}>
+   
+                                <TextField
+                                    value={message}
+                                    onChange={(e) =>setMessage(e.target.value)}
+                                    id="outlined-basic" label="Enter your chat" variant="outlined" />
+                      <Button variant='contained' 
+                      onClick={sendMessage}>Send</Button>
+                            </div> 
+
+                        </div>
+                    </div> :<></> }
+                    
 
 
 
@@ -390,7 +546,8 @@ export default function VideoMeetComponent() {
                             {(video == true) ? <VideocamIcon /> : <VideocamOffIcon />}
                         </IconButton>
 
-                        <IconButton style={{ color: "red", }}>
+                        <IconButton onClick={handleEndCall}
+                         style={{ color: "red", }}>
                             <CallEndIcon />
                         </IconButton>
 
@@ -401,12 +558,15 @@ export default function VideoMeetComponent() {
                         </IconButton>
 
                         {screenAvailable == true ? 
-                            <IconButton  style={{ color: "aliceblue" }}>
+                            <IconButton onClick={handleScreen}
+                                style={{ color: "aliceblue" }}>
                                 {screen == true ? <ScreenShareIcon /> : <StopScreenShareIcon /> }
                             </IconButton> : <></>}
                         
                         <Badge badgeContent={newMessages}max={999} color="secondary">
-                            <IconButton style={{color:"aliceblue"}}>
+                            <IconButton onClick={() => setModal(!showModal)}
+                                style=
+                            {{ color: "aliceblue" }}>
                        
                        <ChatIcon />
                             </IconButton>

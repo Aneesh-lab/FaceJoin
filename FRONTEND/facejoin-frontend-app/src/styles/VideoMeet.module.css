@@ -1,7 +1,7 @@
 .meetVideoContainer {
   position: relative;
   height: 100vh;
-  background: rgb(1, 4, 48);
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
 }
 
 .meetUserVideo {
@@ -9,7 +9,7 @@
   bottom: 10vh;
   height: 20vh;
   width: auto;
-  right: 0;
+  left: 0;
   border-radius: 20px;
 }
 
@@ -34,4 +34,123 @@
   height: 20vh;
   min-width: 30vw;
   border-radius: 10px;
+}
+
+.chatRoom {
+  position: absolute;
+  height: 80vh;
+  right: 0;
+  background: white;
+  border-radius: 10px;
+  width: 30vw;
+  bottom: 10vh;
+  padding-inline: 20px;
+}
+
+.chatContainer {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Message list area */
+.chatMessages {
+  flex: 1;
+  overflow-y: auto; /* 👈 Enables vertical scroll */
+  padding-right: 10px;
+  margin-bottom: 10px;
+  scroll-behavior: smooth; /* smooth auto-scroll */
+}
+
+/* Chat input area (already exists as .chattingArea, tweak it slightly) */
+.chattingArea {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  bottom: 0;
+  padding: 10px 0;
+  background: white;
+}
+
+.chatData {
+  display: flex;
+  flex-direction: column; /* Stack message and time vertically */
+  align-items: flex-end; /* Align items to the right for sent messages (or flex-start for received) */
+  gap: 5px; /* Adjust gap between message and time */
+  max-width: 70%; /* Limit width for chat bubble effect */
+}
+
+.messageData {
+  margin: 0; /* Remove default margins */
+  padding: 8px 12px; /* Add padding for chat bubble */
+  background-color: #e1f5fe; /* Background for message bubble */
+  border-radius: 8px; /* Rounded corners */
+  word-wrap: break-word; /* Ensure long text wraps */
+}
+
+.messageTime {
+  font-size: 0.75rem; /* Smaller font for time */
+  color: #666; /* Subtle color for time */
+  margin: 0; /* Remove default margins */
+}
+
+.chatContainer {
+  width: 100%; /* Full width for the chat container */
+  max-width: 100%; /* Prevent overflow */
+  overflow-x: hidden; /* Avoid horizontal overflow */
+  padding: 0 10px; /* Add padding to prevent edge cropping */
+  box-sizing: border-box;
+}
+
+.chatMessages {
+  display: flex;
+  flex-direction: column; /* Stack messages vertically */
+  max-height: 80vh; /* Limit height for scrollable area */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 10px;
+}
+
+.chatData {
+  display: flex;
+  flex-direction: column; /* Stack message and time vertically */
+  gap: 5px; /* Space between message and time */
+  max-width: 70%; /* Limit width for chat bubble effect */
+  width: fit-content; /* Adjust to content size */
+  margin: 5px 0; /* Vertical spacing between messages */
+}
+
+.chatData.received {
+  align-items: flex-start; /* Align received messages to the left */
+}
+
+.chatData.sent {
+  align-items: flex-end; /* Align sent messages to the right */
+}
+
+.messageData {
+  margin: 0;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  font-size: 1rem;
+}
+
+.received .messageData {
+  background-color: #ffffff; /* White for received messages */
+  border: 1px solid #ddd; /* Optional border */
+}
+
+.sent .messageData {
+  background-color: #e1f5fe; /* Light blue for sent messages */
+}
+
+.messageTime {
+  font-size: 0.75rem; /* Smaller font for time */
+  color: #666; /* Subtle color */
+  margin: 0; /* Remove default margins */
+  text-align: right; /* Align time with message content */
 }

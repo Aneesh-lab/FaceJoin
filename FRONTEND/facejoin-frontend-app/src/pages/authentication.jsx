@@ -38,6 +38,8 @@ export default function Authentication() {
   const { handleRegister, handleLogin } = React.useContext(AuthContext);
 
   let handleAuth = async () => {
+    
+
     try {
       if (formState === 0) {
         
@@ -171,3 +173,13 @@ export default function Authentication() {
      </ThemeProvider>
   );
 }
+
+
+
+
+
+
+
+
+
+

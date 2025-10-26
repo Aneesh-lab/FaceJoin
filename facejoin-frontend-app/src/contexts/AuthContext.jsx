@@ -1,5 +1,5 @@
 import axios from "axios";
-import httpStatus from "http-status";
+
 import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import server from "../environment";
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
             })
 
 
-            if (request.status === httpStatus.CREATED) {
+            if (request.status === 201) {
                 return request.data.message;
             }
         } catch (err) {
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
             console.log(username, password)
             console.log(request.data)
 
-            if (request.status === httpStatus.OK) {
+            if (request.status === 200) {
                 localStorage.setItem("token", request.data.token);
                 setUserData({ token: request.data.token });
                 router("/home")

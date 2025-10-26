@@ -4,7 +4,6 @@ import { Badge, IconButton, ListItem, TextField } from '@mui/material'
 
 import { useNavigate } from "react-router-dom";
 
-
 import Button from '@mui/material/Button';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
@@ -294,34 +293,43 @@ export default function VideoMeetComponent() {
                     };
 
                     connections[socketListId].onaddstream = (event) => {
-                        let videoExists = videoRef.current.find(
-                            video => video.socketId == socketListId
-                        );
+                        if (socketListId === socketIdRef.current) return;
+                        
+                          setVideos((videos) => {
+                    // If video already exists, do nothing
+                    if (videos.find(v => v.socketId === socketListId)) return videos;
 
-                        if (videoExists) {
-                            setVideos(videos => {
-                                const updatedVideos = videos.map(video =>
-                                    video.socketId == socketListId
-                                        ? { ...video, stream: event.stream }
-                                        : video
-                                );
-                                videoRef.current = updatedVideos;
-                                return updatedVideos;
-                            });
-                        } else {
-                            let newVideo = {
-                                socketId: socketListId,
-                                stream: event.stream,
-                                autoPlay: true,
-                                playsinline: true
-                            };
+                    return [...videos, { socketId: socketListId, stream: event.stream }];
+                });
+                        // let videoExists = videoRef.current.find(
+                        //     video => video.socketId == socketListId
+                        // );
 
-                            setVideos(videos => {
-                                const updatedVideos = [...videos, newVideo];
-                                videoRef.current = updatedVideos;
-                                return updatedVideos;
-                            });
-                        }
+                        // if (videoExists) {
+                        //     setVideos(videos => {
+                        //         const updatedVideos = videos.map(video =>
+                        //             video.socketId == socketListId
+                        //                 ? { ...video, stream: event.stream }
+                        //                 : video
+                        //         );
+                        //         videoRef.current = updatedVideos;
+                        //         return updatedVideos;
+                        //     });
+                        // }
+                    //     else {
+                    //         let newVideo = {
+                    //             socketId: socketListId,
+                    //             stream: event.stream,
+                    //             autoPlay: true,
+                    //             playsinline: true
+                    //         };
+
+                    //         setVideos(videos => {
+                    //             const updatedVideos = [...videos, newVideo];
+                    //             videoRef.current = updatedVideos;
+                    //             return updatedVideos;
+                    //         });
+                    //     }
                     };
 
 

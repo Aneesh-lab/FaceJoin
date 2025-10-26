@@ -7,18 +7,34 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
 *.local
 
-# Editor directories and files
-.vscode/*
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor and OS files
+.vscode/
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Optional: ignore test coverage reports
+coverage/
+
+# Optional: ignore lockfiles if using multiple package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
